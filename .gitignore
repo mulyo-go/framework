@@ -1,0 +1,14 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+.env
+storage/logs/*
+!storage/logs/.gitkeep
+vendor/
+.DS_Store
+.idea/
+.vscode/
