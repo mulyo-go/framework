@@ -909,23 +909,26 @@ func RenderError(c *gin.Context, status int) {
 		t = getTemplate("Error/" + codeStr + ".blade.html")
 	}
 
-	if t == nil {
-		viewPath := resolveViewPath("Error/" + codeStr)
-		content, err := readViewContent(viewPath)
-		if err != nil {
-			_, _ = c.Writer.Write([]byte(http.StatusText(status)))
+	if t != nil {
+		var err error
+		if tmpl := t.Lookup(t.Name()); tmpl != nil {
+			err = tmpl.Execute(c.Writer, enrichTemplateData(c, gin.H{}))
+		} else {
+			err = t.Execute(c.Writer, enrichTemplateData(c, gin.H{}))
+		}
+		if err == nil {
 			return
 		}
-		preprocessed := preprocessGbr(content)
-		_ = executeStandaloneView(c, "Error/"+codeStr, preprocessed, enrichTemplateData(c, gin.H{}))
-		return
 	}
 
-	clone := template.New("error").Funcs(FuncMap)
-	for _, tmpl := range t.Templates() {
-		clone.AddParseTree(tmpl.Name(), tmpl.Tree)
+	viewPath := resolveViewPath("Error/" + codeStr)
+	content, err := readViewContent(viewPath)
+	if err != nil {
+		_, _ = c.Writer.Write([]byte(http.StatusText(status)))
+		return
 	}
-	_ = clone.Execute(c.Writer, enrichTemplateData(c, gin.H{}))
+	preprocessed := preprocessGbr(content)
+	_ = executeStandaloneView(c, "Error/"+codeStr, preprocessed, enrichTemplateData(c, gin.H{}))
 }
 
 // ---------- Helper function implementations ----------
